@@ -24,11 +24,9 @@
             box-shadow: 0 0 10px rgb(0, 0, 0);
         }
         #map {
-            height: 300px;
-            width: 100%;
+            height: 1500px; /* Set a fixed height for the map */
+            width: 100%;   /* Ensure the map takes the full width of the container */
             margin-bottom: 10px;
-            background: url('path_to_your_static_map_image.jpg') no-repeat center center;
-            background-size: cover;
         }
         .container input, .container button {
             width: 100%;
@@ -47,7 +45,7 @@
                 padding: 20px;
             }
             #map {
-                height: 300px;
+                height: 300px; /* Adjust height for small screens */
                 width: 100%;
             }
             .container {
@@ -59,7 +57,7 @@
 </head>
 <body>
     <div class="container">
-        <form id="order-form" method="post" action="#">
+        <form id="order-form" method="post" action="https://script.google.com/macros/s/AKfycbwIsiDI9AVxwvxBT8AyWWQN6N05VbM8RQCMGS1rIl7z8HK5fUHz4UanZ2pSEZigajIL/exec">
             <div id="map"></div>
             <h1>Form Order</h1>
             <p>Pesanan akan diproses setelah melakukan deposit</p>
@@ -96,6 +94,8 @@
             <label for="jam">Jam Penjemputan</label>
             <input id="jam" type="time" name="jam">
 
+
+
             <label for="hargaJual">Harga</label>
             <input type="text" id="hargaJual" name="hargaJual" readonly>
 
@@ -112,95 +112,134 @@
         </div>
     </div>
     <script>
-        var radiusPriceConfigurations = [
-            { minRadius: 0, maxRadius: 2, price: 85000 },
-            { minRadius: 0, maxRadius: 3, price: 80000 },
-            { minRadius: 0, maxRadius: 4, price: 75000 },
-            { minRadius: 0, maxRadius: 6, price: 70000 },
-            { minRadius: 0, maxRadius: 10, price: 50000 },
-            { minRadius: 0, maxRadius: 14, price: 55000 },
-            { minRadius: 0, maxRadius: 18, price: 25000 },
-            { minRadius: 0, maxRadius: 22, price: 35000 },
-            { minRadius: 0, maxRadius: 26, price: 25000 },
-            { minRadius: 0, maxRadius: 30, price: 15000 },
-            { minRadius: 0, maxRadius: 500, price: 6000 },
-        ];
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: -8.4443104, lng: 115.2157944 },
+                zoom: 11.5
+            });
+            var directionsService = new google.maps.DirectionsService();
+            var directionsDisplay = new google.maps.DirectionsRenderer();
+            directionsDisplay.setMap(map);
 
-        function getHargaBerdasarkanRadius(distance) {
-            for (var i = 0; i < radiusPriceConfigurations.length; i++) {
-                var config = radiusPriceConfigurations[i];
-                if (distance > config.minRadius && distance <= config.maxRadius) {
-                    return config.price * distance;
-                }
-            }
-            return null;
-        }
-
-        function calculateDistanceAndPrice() {
-            var start = document.getElementById('lokasi-penjemputan').value.trim();
-            var end = document.getElementById('lokasi-antar').value.trim();
+            var startInput = document.getElementById('lokasi-penjemputan');
+            var endInput = document.getElementById('lokasi-antar');
             var detailDiv = document.getElementById('detail');
+            var cekHargaBtn = document.getElementById('cek-harga-btn');
+            var pesanSekarangBtn = document.getElementById('pesan-sekarang-btn');
+            var backToHomeBtn = document.getElementById('back-to-home');
 
-            if (start === '' || end === '') {
-                detailDiv.innerHTML = 'Lokasi awal dan akhir harus diisi.';
-                return;
-            }
-
-            // Simulasi perhitungan jarak (ganti dengan perhitungan jarak Anda sendiri)
-            var distance = Math.random() * 30; // Gantilah dengan cara menghitung jarak sebenarnya
-            var price = getHargaBerdasarkanRadius(distance);
-
-            if (price !== null) {
-                var roundedPrice = Math.round(price / 1000) * 1000;
-                detailDiv.innerHTML = 'Jarak: ' + Math.round(distance) + ' km<br>' +
-                                      'Estimated Price: Rp. ' + roundedPrice.toLocaleString('id-ID');
-                document.getElementById('hargaJual').value = 'Rp. ' + roundedPrice.toLocaleString('id-ID');
-            } else {
-                detailDiv.innerHTML = 'Jarak: ' + Math.round(distance) + ' km<br>' +
-                                      'Harga: Diluar jangkauan';
-            }
-        }
-
-        document.getElementById('cek-harga-btn').addEventListener('click', function(event) {
-            event.preventDefault();
-            calculateDistanceAndPrice();
-        });
-
-        document.getElementById('pesan-sekarang-btn').addEventListener('click', function() {
-            var origin = document.getElementById('lokasi-penjemputan').value.trim();
-            var destination = document.getElementById('lokasi-antar').value.trim();
-            var tanggal = document.getElementById('tanggal').value.trim();
-            var jam = document.getElementById('jam').value.trim();
-            var jumlahOrang = document.getElementById('jumlah-orang').value.trim();
-            var nama = document.getElementById('nama').value.trim();
-            var nomorTelepon = document.getElementById('nomor-telepon').value.trim();
-            var asal = document.getElementById('asal').value.trim();
-            var nomorPesawat = document.getElementById('nomor-pesawat').value.trim();
-            var harga = document.getElementById('hargaJual').value.trim();
-
-            if (!origin || !destination || !tanggal || !jam || !jumlahOrang || !nama || !nomorTelepon || !asal || !harga) {
-                alert('Semua bidang wajib harus diisi kecuali Nomor Pesawat yang bersifat opsional.');
-                return;
-            }
-
-            var nomorWhatsApp = [
-                '6288808102000'
+            var radiusPriceConfigurations = [
+                { minRadius: 0, maxRadius: 2, price: 85000 },
+                { minRadius: 0, maxRadius: 3, price: 80000 },
+                { minRadius: 0, maxRadius: 4, price: 75000 },
+                { minRadius: 0, maxRadius: 6, price: 70000 },
+                { minRadius: 0, maxRadius: 10, price: 50000 },
+                { minRadius: 0, maxRadius: 14, price: 55000 },
+                { minRadius: 0, maxRadius: 18, price: 25000 },
+                { minRadius: 0, maxRadius: 22, price: 35000 },
+                { minRadius: 0, maxRadius: 26, price: 25000 },
+                { minRadius: 0, maxRadius: 30, price: 15000 },
+                { minRadius: 0, maxRadius: 500, price: 6000 },
             ];
 
-            var whatsappMessage = `Halo, saya ingin memesan transportasi \n\n*• Nama                   :* ${nama}\n\n *• Asal                     :* ${asal}\n\n*• Nomor Telepon  :* ${nomorTelepon}\n\n*• Untuk                    :* ${jumlahOrang}  Orang\n\n*• Nomor Pesawat  :* ${nomorPesawat ? nomorPesawat : 'Tidak disebutkan'}\n\n*• Dari                      :* ${origin}\n\n*• Ke                       :* ${destination}\n\n*• Pada Tanggal       :* ${tanggal}\n\n*• Jam                         :* ${jam}\n\n*• Total Harga    : Rp.* ${harga}.`;
+            function getHargaBerdasarkanRadius(distance) {
+                for (var i = 0; i < radiusPriceConfigurations.length; i++) {
+                    var config = radiusPriceConfigurations[i];
+                    if (distance > config.minRadius && distance <= config.maxRadius) {
+                        return config.price * distance;
+                    }
+                }
+                return null;
+            }
 
-            nomorWhatsApp.forEach(function(nomor) {
-                var whatsappLink = `https://api.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(whatsappMessage)}`;
-                window.open(whatsappLink, '_blank');
+            function calculateAndDisplayRoute() {
+                var origin = startInput.value.trim();
+                var destination = endInput.value.trim();
+
+                if (origin === '' || destination === '') {
+                    detailDiv.innerHTML = 'Lokasi awal dan akhir harus diisi.';
+                    return;
+                }
+
+                var request = {
+                    origin: origin,
+                    destination: destination,
+                    travelMode: google.maps.TravelMode.DRIVING
+                };
+
+                directionsService.route(request, function(result, status) {
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        directionsDisplay.setDirections(result);
+
+                        // Menghitung jarak dalam kilometer
+                        var distance = result.routes[0].legs[0].distance.value / 1000; // Jarak dalam km
+                        var price = getHargaBerdasarkanRadius(distance);
+
+                        if (price !== null) {
+                            // Round price to nearest thousand
+                            var roundedPrice = Math.round(price / 1000) * 1000;
+                            detailDiv.innerHTML = 'Jarak: ' + Math.round(distance) + ' km<br>' +
+                                                'Estimated Price: Rp. ' + roundedPrice.toLocaleString('id-ID');
+                            document.getElementById('hargaJual').value = 'Rp. ' + roundedPrice.toLocaleString('id-ID');
+                        } else {
+                            detailDiv.innerHTML = 'Jarak: ' + Math.round(distance) + ' km<br>' +
+                                                'Harga: Diluar jangkauan';
+                        }
+                    } else {
+                        detailDiv.innerHTML = 'Rute tidak ditemukan';
+                    }
+                });
+            }
+
+            cekHargaBtn.addEventListener('click', function(event) {
+                event.preventDefault(); // Mencegah form dari submit
+                calculateAndDisplayRoute();
             });
 
-            document.getElementById('order-form').reset();
-            document.getElementById('detail').innerHTML = '';
-        });
+            pesanSekarangBtn.addEventListener('click', function() {
+                // Mengambil nilai-nilai dari formulir
+                var origin = startInput.value.trim();
+                var destination = endInput.value.trim();
+                var tanggal = document.getElementById('tanggal').value.trim();
+                var jam = document.getElementById('jam').value.trim();
+                var jumlahOrang = document.getElementById('jumlah-orang').value.trim();
+                var nama = document.getElementById('nama').value.trim();
+                var nomorTelepon = document.getElementById('nomor-telepon').value.trim();
+                var asal = document.getElementById('asal').value.trim();
+                var nomorPesawat = document.getElementById('nomor-pesawat').value.trim();
+                var harga = document.getElementById('hargaJual').value.trim();
 
-        document.getElementById('back-to-home').addEventListener('click', function() {
-            window.location.href = 'index.html';
-        });
+                // Validasi form
+                if (!origin || !destination || !tanggal || !jam || !jumlahOrang || !nama || !nomorTelepon || !asal || !harga) {
+                    alert('Semua bidang wajib harus diisi kecuali Nomor Pesawat yang bersifat opsional.');
+                    return;
+                }
+
+                // Daftar nomor WhatsApp yang akan dituju (ubah sesuai kebutuhan)
+                var nomorWhatsApp = [
+                    //'6281933301033', // Nomor WhatsApp pertama
+                    '6288808102000'  // Nomor WhatsApp kedua
+                ];
+
+                // Membuat pesan untuk dikirim ke WhatsApp
+                var whatsappMessage = `Halo, saya ingin memesan transportasi \n\n*• Nama                   :* ${nama}\n\n *• Asal                     :* ${asal}\n\n*• Nomor Telepon  :* ${nomorTelepon}\n\n*• Untuk                    :* ${jumlahOrang}  Orang\n\n*• Nomor Pesawat  :* ${nomorPesawat ? nomorPesawat : 'Tidak disebutkan'}\n\n*• Dari                      :* ${origin}\n\n*• Ke                       :* ${destination}\n\n*• Pada Tanggal       :* ${tanggal}\n\n*• Jam                         :* ${jam}\n\n*• Total Harga    : Rp.* ${harga}.`;
+
+                // Loop untuk membuka tab WhatsApp untuk setiap nomor
+                nomorWhatsApp.forEach(function(nomor) {
+                    var whatsappLink = `https://api.whatsapp.com/send?phone=${nomor}&text=${encodeURIComponent(whatsappMessage)}`;
+                    window.open(whatsappLink, '_blank');
+                });
+
+                // Mengosongkan formulir setelah mengirim pesan
+                document.getElementById('order-form').reset();
+                detailDiv.innerHTML = '';
+            });
+
+            // Event listener untuk tombol "Kembali ke Halaman Awal"
+            backToHomeBtn.addEventListener('click', function() {
+                window.location.href = 'index.html'; // Ganti dengan URL halaman awal Anda
+            });
+        }
     </script>
 </body>
 </html>
